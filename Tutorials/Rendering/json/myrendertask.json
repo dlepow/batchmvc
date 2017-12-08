@@ -1,0 +1,32 @@
+{
+  "id": "myrendertask",
+  "commandLine": "cmd /c \"3dsmaxcmdio.exe -secure off -v:5 -rfw:0 -start:1 -end:1 -outputName:\"image.jpg\" -w 1600 -h 1200 Robo_Dummy_Lo_Res.max\"",
+  "resourceFiles": [
+    {
+        "blobSource": "https://danlep1110.blob.core.windows.net/scenefiles/Robo_Dummy_Lo_Res.max",
+        "filePath": "Robo_Dummy_Lo_Res.max"
+    },
+    {
+        "blobSource": "https://danlep1110.blob.core.windows.net/scenefiles/Lo_Res_Diff_Clean_Eyes.jpg",
+        "filePath": "Lo_Res_Diff_Clean_Eyes.jpg"}
+],
+    "outputFiles": [
+        {
+            "filePattern": "image*.jpg",
+            "destination": {
+                "container": {
+                    "containerUrl": "https://danlep1110.blob.core.windows.net/job-renderjob/?sv=2017-04-17&ss=b&srt=sco&sp=rwlac&se=2018-11-13T22:57:29Z&st=2017-11-13T14:57:29Z&spr=https&sig=t%2FHFXwmPYDw4h43tyFel902ZLkv5JsFWhfT7Om9hHFc%3D"
+                }
+            },
+            "uploadOptions": {
+                "uploadCondition": "TaskSuccess"
+            }
+        }
+    ],
+  "userIdentity": {
+    "autoUser": {
+      "scope": "task",
+      "elevationLevel": "nonAdmin"
+    }
+  }
+}
