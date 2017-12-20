@@ -1,9 +1,9 @@
 [{
-    "id": "mymultirendertask",
+    "id": "mymultitask1",
     "commandLine": "cmd /c \"3dsmaxcmdio.exe -secure off -v:5 -rfw:0 -start:1 -end:1 -outputName:\"dragon.jpg\" -w 1600 -h 1200 MotionBlur-DragonFlying.max\"",
     "resourceFiles": [
       {
-          "blobSource": "https://danlep1110.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
+          "blobSource": "https://mystorageaccount.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
           "filePath": "MotionBlur-DragonFlying.max"
       }
   ],
@@ -12,7 +12,7 @@
               "filePattern": "dragon*.jpg",
               "destination": {
                   "container": {
-                      "containerUrl": "https://danlep1110.blob.core.windows.net/job-renderjob/?sv=2017-04-17&ss=b&srt=sco&sp=rwlac&se=2018-11-13T22:57:29Z&st=2017-11-13T14:57:29Z&spr=https&sig=t%2FHFXwmPYDw4h43tyFel902ZLkv5JsFWhfT7Om9hHFc%3D"
+                      "containerUrl": "https://mystorageaccount.blob.core.windows.net/job-myrenderjob/?Add_Your_SAS_Token_Here"
                   }
               },
               "uploadOptions": {
@@ -32,7 +32,7 @@
     "commandLine": "cmd /c \"3dsmaxcmdio.exe -secure off -v:5 -rfw:0 -start:2 -end:2 -outputName:\"dragon.jpg\" -w 1600 -h 1200 MotionBlur-DragonFlying.max\"",
     "resourceFiles": [
       {
-          "blobSource": "https://danlep1110.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
+          "blobSource": "https://mystorageaccount.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
           "filePath": "MotionBlur-DragonFlying.max"
       }
   ],
@@ -41,7 +41,7 @@
               "filePattern": "dragon*.jpg",
               "destination": {
                   "container": {
-                      "containerUrl": "https://danlep1110.blob.core.windows.net/job-renderjob/?sv=2017-04-17&ss=b&srt=sco&sp=rwlac&se=2018-11-13T22:57:29Z&st=2017-11-13T14:57:29Z&spr=https&sig=t%2FHFXwmPYDw4h43tyFel902ZLkv5JsFWhfT7Om9hHFc%3D"
+                      "containerUrl": "https://mystorageaccount.blob.core.windows.net/job-myrenderjob/?Add_Your_SAS_Token_Here"
                   }
               },
               "uploadOptions": {
@@ -61,7 +61,7 @@
     "commandLine": "cmd /c \"3dsmaxcmdio.exe -secure off -v:5 -rfw:0 -start:3 -end:3 -outputName:\"dragon.jpg\" -w 1600 -h 1200 MotionBlur-DragonFlying.max\"",
     "resourceFiles": [
       {
-          "blobSource": "https://danlep1110.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
+          "blobSource": "https://mystorageaccount.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
           "filePath": "MotionBlur-DragonFlying.max"
       }
   ],
@@ -70,7 +70,7 @@
               "filePattern": "dragon*.jpg",
               "destination": {
                   "container": {
-                      "containerUrl": "https://danlep1110.blob.core.windows.net/job-renderjob/?sv=2017-04-17&ss=b&srt=sco&sp=rwlac&se=2018-11-13T22:57:29Z&st=2017-11-13T14:57:29Z&spr=https&sig=t%2FHFXwmPYDw4h43tyFel902ZLkv5JsFWhfT7Om9hHFc%3D"
+                      "containerUrl": "https://mystorageaccount.blob.core.windows.net/job-myrenderjob/?Add_Your_SAS_Token_Here"
                   }
               },
               "uploadOptions": {
@@ -90,7 +90,7 @@
     "commandLine": "cmd /c \"3dsmaxcmdio.exe -secure off -v:5 -rfw:0 -start:4 -end:4 -outputName:\"dragon.jpg\" -w 1600 -h 1200 MotionBlur-DragonFlying.max\"",
     "resourceFiles": [
       {
-          "blobSource": "https://danlep1110.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
+          "blobSource": "https://mystorageaccount.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
           "filePath": "MotionBlur-DragonFlying.max"
       }
   ],
@@ -99,7 +99,7 @@
               "filePattern": "dragon*.jpg",
               "destination": {
                   "container": {
-                      "containerUrl": "https://danlep1110.blob.core.windows.net/job-renderjob/?sv=2017-04-17&ss=b&srt=sco&sp=rwlac&se=2018-11-13T22:57:29Z&st=2017-11-13T14:57:29Z&spr=https&sig=t%2FHFXwmPYDw4h43tyFel902ZLkv5JsFWhfT7Om9hHFc%3D"
+                      "containerUrl": "https://mystorageaccount.blob.core.windows.net/job-myrenderjob/?Add_Your_SAS_Token_Here"
                   }
               },
               "uploadOptions": {
@@ -119,7 +119,7 @@
     "commandLine": "cmd /c \"3dsmaxcmdio.exe -secure off -v:5 -rfw:0 -start:5 -end:5 -outputName:\"dragon.jpg\" -w 1600 -h 1200 MotionBlur-DragonFlying.max\"",
     "resourceFiles": [
       {
-          "blobSource": "https://danlep1110.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
+          "blobSource": "https://mystorageaccount.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
           "filePath": "MotionBlur-DragonFlying.max"
       }
   ],
@@ -128,7 +128,7 @@
               "filePattern": "dragon*.jpg",
               "destination": {
                   "container": {
-                      "containerUrl": "https://danlep1110.blob.core.windows.net/job-renderjob/?sv=2017-04-17&ss=b&srt=sco&sp=rwlac&se=2018-11-13T22:57:29Z&st=2017-11-13T14:57:29Z&spr=https&sig=t%2FHFXwmPYDw4h43tyFel902ZLkv5JsFWhfT7Om9hHFc%3D"
+                      "containerUrl": "https://mystorageaccount.blob.core.windows.net/job-myrenderjob/?Add_Your_SAS_Token_Here"
                   }
               },
               "uploadOptions": {
@@ -148,7 +148,7 @@
     "commandLine": "cmd /c \"3dsmaxcmdio.exe -secure off -v:5 -rfw:0 -start:6 -end:6 -outputName:\"dragon.jpg\" -w 1600 -h 1200 MotionBlur-DragonFlying.max\"",
     "resourceFiles": [
       {
-          "blobSource": "https://danlep1110.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
+          "blobSource": "https://mystorageaccount.blob.core.windows.net/scenefiles/MotionBlur-DragonFlying.max",
           "filePath": "MotionBlur-DragonFlying.max"
       }
   ],
@@ -157,7 +157,7 @@
               "filePattern": "dragon*.jpg",
               "destination": {
                   "container": {
-                      "containerUrl": "https://danlep1110.blob.core.windows.net/job-renderjob/?sv=2017-04-17&ss=b&srt=sco&sp=rwlac&se=2018-11-13T22:57:29Z&st=2017-11-13T14:57:29Z&spr=https&sig=t%2FHFXwmPYDw4h43tyFel902ZLkv5JsFWhfT7Om9hHFc%3D"
+                      "containerUrl": "https://mystorageaccount.blob.core.windows.net/job-myrenderjob/?Add_Your_SAS_Token_Here"
                   }
               },
               "uploadOptions": {

@@ -1,6 +1,6 @@
 {
   "id": "myrenderpool",
-  "vmSize": "standard_d1_v2",
+  "vmSize": "standard_d2_v2",
   "virtualMachineConfiguration": {
     "imageReference": {
       "publisher": "batch",
