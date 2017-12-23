@@ -3,16 +3,15 @@
 // Companion project to the following article:
 // https://docs.microsoft.com/azure/batch/quick-run-dotnet
 
+using Microsoft.Azure.Batch;
+using Microsoft.Azure.Batch.Auth;
+using Microsoft.Azure.Batch.Common;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.Azure.Batch;
-using Microsoft.Azure.Batch.Auth;
-using Microsoft.Azure.Batch.Common;
 
 
 namespace BatchDotNetQuickstart
@@ -90,6 +89,7 @@ namespace BatchDotNetQuickstart
                 // Get a Batch client using account creds
 
                 BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(BatchAccountUrl, BatchAccountName, BatchAccountKey);
+
                 BatchClient batchClient = BatchClient.Open(cred);
 
                 using (batchClient)
@@ -136,10 +136,26 @@ namespace BatchDotNetQuickstart
                     // Create a Batch job
                     Console.WriteLine("Creating job [{0}]...", JobId);
 
-                    CloudJob job = batchClient.JobOperations.CreateJob();
-                    job.Id = JobId;
-                    job.PoolInformation = new PoolInformation { PoolId = PoolId };
-                    job.Commit();
+                    try
+                    {
+                        CloudJob job = batchClient.JobOperations.CreateJob();
+                        job.Id = JobId;
+                        job.PoolInformation = new PoolInformation { PoolId = PoolId };
+
+                        job.Commit();
+                    }
+                    catch (BatchException be)
+                    {
+                        // Accept the specific error code JobExists as that is expected if the job already exists
+                        if (be.RequestInformation?.BatchError != null && be.RequestInformation.BatchError.Code == BatchErrorCodeStrings.JobExists)
+                        {
+                            Console.WriteLine("The job {0} already existed when we tried to create it", JobId);
+                        }
+                        else
+                        {
+                            throw; // Any other exception is unexpected
+                        }
+                    }
 
                     // Create a collection to hold the tasks that we'll be adding to the job
 
@@ -151,9 +167,9 @@ namespace BatchDotNetQuickstart
 
                     foreach (ResourceFile inputFile in inputFiles)
                     {
-                        string taskId = "Task" + inputFiles.IndexOf(inputFile);
+                        string taskId = String.Format("Task{0}", inputFiles.IndexOf(inputFile));
                         string inputfilename = inputFile.FilePath;
-                        string taskCommandLine = String.Format("cmd /c echo 'Processing file {0} in task {1}' & type {0}", inputfilename, taskId);
+                        string taskCommandLine = String.Format("cmd /c type {0}", inputfilename);
 
                         CloudTask task = new CloudTask(taskId, taskCommandLine);
                         task.ResourceFiles = new List<ResourceFile> { inputFile };
@@ -165,7 +181,13 @@ namespace BatchDotNetQuickstart
 
 
                     // Monitor task success/failure, specifying a maximum amount of time to wait for the tasks to complete.
-                    MonitorTasks(batchClient, JobId, TimeSpan.FromMinutes(30)).Wait();
+                    Console.WriteLine("Monitoring all tasks for 'Completed' state, timeout in 30 min...");
+
+                    IEnumerable<CloudTask> addedTasks = batchClient.JobOperations.ListTasks(JobId);
+
+                    batchClient.Utilities.CreateTaskStateMonitor().WaitAll(addedTasks, TaskState.Completed, TimeSpan.FromMinutes(30));
+
+                    Console.WriteLine("All tasks reached state Completed.");
 
                     // Print task output
                     Console.WriteLine();
@@ -176,11 +198,10 @@ namespace BatchDotNetQuickstart
                     foreach (CloudTask task in completedtasks)
                     {
                         string nodeId = String.Format(task.ComputeNodeInformation.ComputeNodeId);
-                        Console.WriteLine("Task " + task.Id);
-                        Console.WriteLine("Node " + nodeId);
-                        Console.WriteLine("stdout:" + Environment.NewLine + task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
-                        Console.WriteLine();
-                        Console.WriteLine("stderr:" + Environment.NewLine + task.GetNodeFile(Constants.StandardErrorFileName).ReadAsString());
+                        Console.WriteLine("Task: {0}", task.Id);
+                        Console.WriteLine("Node: {0}", nodeId);
+                        Console.WriteLine("Standard out:");
+                        Console.WriteLine(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
                     }
 
                     // Print out some timing info
@@ -231,11 +252,7 @@ namespace BatchDotNetQuickstart
                 Console.WriteLine("Sample complete, hit ENTER to exit...");
                 Console.ReadLine();
             }
-
-
         }
-
-
 
         // UploadFileToContainer(): Uploads the specified file to the specified Blob container.
         // * blobClient: A Microsoft.WindowsAzure.Storage.Blob.CloudBlobClient object.
@@ -266,84 +283,6 @@ namespace BatchDotNetQuickstart
             string blobSasUri = String.Format("{0}{1}", blobData.Uri, sasBlobToken);
 
             return new ResourceFile(blobSasUri, blobName);
-        }
-
-
-        // MonitorTasks(): Asynchronously monitors the specified tasks for completion and returns a value indicating
-        //   whether all tasks completed successfully within the timeout period.
-        //   * batchClient: A BatchClient object.
-        //   * jobId: The ID of the job containing the tasks to be monitored.
-        //   * timeout: The period of time to wait for the tasks to reach the completed state.
-        //   Returns: A Boolean indicating true if all tasks in the specified job completed successfully
-        //      (with an exit code of 0) within the specified timeout period; otherwise false
-        private static async Task<bool> MonitorTasks(BatchClient batchClient, string jobId, TimeSpan timeout)
-        {
-            bool allTasksSuccessful = true;
-            const string successMessage = "All tasks reached state Completed.";
-            const string failureMessage = "One or more tasks failed to reach the Completed state within the timeout period.";
-
-            // Obtain the collection of tasks currently managed by the job. Note that we use a detail level to
-            // specify that only the "id" property of each task should be populated. Using a detail level for
-            // all list operations helps to lower response time from the Batch service.
-            ODATADetailLevel detail = new ODATADetailLevel(selectClause: "id");
-            List<CloudTask> tasks = await batchClient.JobOperations.ListTasks(JobId, detail).ToListAsync();
-
-            Console.WriteLine("Awaiting task completion, timeout in {0}...", timeout.ToString());
-
-            // We use a TaskStateMonitor to monitor the state of our tasks. In this case, we will wait for all tasks to
-            // reach the Completed state.
-            TaskStateMonitor taskStateMonitor = batchClient.Utilities.CreateTaskStateMonitor();
-            try
-            {
-                await taskStateMonitor.WhenAll(tasks, TaskState.Completed, timeout);
-            }
-            catch (TimeoutException)
-            {
-                await batchClient.JobOperations.TerminateJobAsync(jobId, failureMessage);
-                Console.WriteLine(failureMessage);
-                return false;
-            }
-
-            await batchClient.JobOperations.TerminateJobAsync(jobId, successMessage);
-
-            // All tasks have reached the "Completed" state, however, this does not guarantee all tasks completed successfully.
-            // Here we further check each task's ExecutionInfo property to ensure that it did not encounter a scheduling error
-            // or return a non-zero exit code.
-
-            // Update the detail level to populate only the task id and executionInfo properties.
-            // We refresh the tasks below, and need only this information for each task.
-            detail.SelectClause = "id, executionInfo";
-
-            foreach (CloudTask task in tasks)
-            {
-                // Populate the task's properties with the latest info from the Batch service
-                await task.RefreshAsync(detail);
-
-                if (task.ExecutionInformation.Result == TaskExecutionResult.Failure)
-                {
-                    // A task with failure information set indicates there was a problem with the task. It is important to note that
-                    // the task's state can be "Completed," yet still have encountered a failure.
-
-                    allTasksSuccessful = false;
-
-                    Console.WriteLine("WARNING: Task [{0}] encountered a failure: {1}", task.Id, task.ExecutionInformation.FailureInformation.Message);
-                    if (task.ExecutionInformation.ExitCode != 0)
-                    {
-                        // A non-zero exit code may indicate that the application executed by the task encountered an error
-                        // during execution. As not every application returns non-zero on failure by default (e.g. robocopy),
-                        // your implementation of error checking may differ from this example.
-
-                        Console.WriteLine("WARNING: Task [{0}] returned a non-zero exit code - this may indicate task execution or completion failure.", task.Id);
-                    }
-                }
-            }
-
-            if (allTasksSuccessful)
-            {
-                Console.WriteLine("Success! All tasks completed successfully within the specified timeout period.");
-            }
-
-            return allTasksSuccessful;
         }
 
         // PrintAggregateException()

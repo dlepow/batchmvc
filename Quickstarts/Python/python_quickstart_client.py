@@ -30,18 +30,17 @@ sys.path.append('..')
 # for the Batch and Storage client objects.
 
 # global
-_BATCH_ACCOUNT_NAME ='danlep1110'
-_BATCH_ACCOUNT_KEY = 'j+1Tu127dkd/Yj0jE+yXrRvJAqT9BlXwwo1CwF+SwAYO/cTiVQzjEKJ+QeE+43pXi/gdiATkvbpLRl3x14pcEQ=='
-_BATCH_ACCOUNT_URL = 'https://danlep1110.westeurope.batch.azure.com'
+_BATCH_ACCOUNT_NAME ='mybatchaccount'
+_BATCH_ACCOUNT_KEY = 'gMSB4M7NW79/djOu/33KbKEPuh7nVIsk2V17dqt2voj0kFLbpQJenDqDpaWLDi7RKpF+wEy4oOSOGSbkxVPLOQ=='
+_BATCH_ACCOUNT_URL = 'https://mybatchaccount.westus2.batch.azure.com'
 
-_STORAGE_ACCOUNT_NAME = 'danlep1110'
-_STORAGE_ACCOUNT_KEY = 'TwLpCQ0oBFjN0q1Ly4/NMY5LS+LjdN4G0uafwpbIC5aAWA8wDu+AFXZB827Mt9lybZB1nUcQbQiUrkPtilK5BQ=='
+_STORAGE_ACCOUNT_NAME = 'mybatchstorage121'
+_STORAGE_ACCOUNT_KEY = 'ST+B5L0VOvv/diqJPVBYMZmR83oS//uncqA590SxjutFNT0THLYqJn72TcM8/e4B0m3Od4WsUHkHRxgI3L8WHw=='
 _POOL_ID = 'PythonQuickstartPool'
-_POOL_NODE_COUNT = 3
+_POOL_NODE_COUNT = 2
 _POOL_VM_SIZE = 'STANDARD_A1_v2'
 _JOB_ID = 'PythonQuickstartJob'
 _STANDARD_OUT_FILE_NAME = 'stdout.txt'
-_STANDARD_ERROR_FILE_NAME = 'stderr.txt'
 
 
 def query_yes_no(question, default="yes"):
@@ -233,7 +232,7 @@ def add_tasks(batch_service_client, job_id, input_files):
 
     for idx, input_file in enumerate(input_files): 
 
-        command = "/bin/bash -c \"echo \'Processing file {} in task {}\'; cat {}\"".format(input_file.file_path, idx, input_file.file_path)
+        command = "/bin/bash -c \"cat {}\"".format(input_file.file_path)
         tasks.append(batch.models.TaskAddParameter(
                 id='Task{}'.format(idx),
                 command_line=command,
@@ -244,7 +243,6 @@ def add_tasks(batch_service_client, job_id, input_files):
     batch_service_client.task.add_collection(job_id, tasks)
 
     
-
 
 def wait_for_tasks_to_complete(batch_service_client, job_id, timeout):
     """
@@ -281,7 +279,7 @@ def wait_for_tasks_to_complete(batch_service_client, job_id, timeout):
 
 
 def print_task_output(batch_service_client, job_id, encoding=None):
-    """Prints the stdout.txt and stderr.txt files for each task in the job.
+    """Prints the stdout.txt file for each task in the job.
 
     :param batch_client: The batch client to use.
     :type batch_client: `batchserviceclient.BatchServiceClient`
@@ -297,27 +295,15 @@ def print_task_output(batch_service_client, job_id, encoding=None):
     for task_id in task_ids:
 
         node_id = batch_service_client.task.get(job_id, task_id).node_info.node_id
-        print("Task {}".format(task_id))
-        print("Node {}".format(node_id))
+        print("Task: {}".format(task_id))
+        print("Node: {}".format(node_id))
 
         stream = batch_service_client.file.get_from_task(job_id, task_id, _STANDARD_OUT_FILE_NAME)
 
         file_text = _read_stream_as_string(
             stream,
             encoding)
-        print("{} content for task {}: ".format(
-            _STANDARD_OUT_FILE_NAME,
-            task_id))
-        print(file_text)
-
-        stream = batch_service_client.file.get_from_task(job_id, task_id, _STANDARD_ERROR_FILE_NAME)
-
-        file_text = _read_stream_as_string(
-            stream,
-            encoding)
-        print("{} content for task {}: ".format(
-            _STANDARD_ERROR_FILE_NAME,
-            task_id))
+        print("Standard output:")
         print(file_text)
 
 def _read_stream_as_string(stream, encoding):
@@ -364,9 +350,9 @@ if __name__ == '__main__':
        
 
     # The collection of data files that are to be processed by the tasks.
-    input_file_paths = [os.path.realpath('./data/taskdata0.txt'),
-                        os.path.realpath('./data/taskdata1.txt'),
-                        os.path.realpath('./data/taskdata2.txt')]
+    input_file_paths = [os.path.realpath('./taskdata0.txt'),
+                        os.path.realpath('./taskdata1.txt'),
+                        os.path.realpath('./taskdata2.txt')]
 
     # Upload the data files. 
     input_files = [
