@@ -26,13 +26,6 @@
     <Folder Include="InputFiles\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="InputFiles\twc78.mp4" />
-    <Content Include="InputFiles\twc79.mp4" />
-    <Content Include="InputFiles\twc80.mp4" />
-    <Content Include="InputFiles\twc81.mp4" />
-    <Content Include="InputFiles\twc83.mp4" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="batch_python_tutorial_ffmpeg.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

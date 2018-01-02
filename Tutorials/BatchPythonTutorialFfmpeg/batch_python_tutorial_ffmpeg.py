@@ -36,10 +36,11 @@ _BATCH_ACCOUNT_URL = 'https://mybatchaccount.westus2.batch.azure.com'
 
 _STORAGE_ACCOUNT_NAME = 'mybatchstorage121'
 _STORAGE_ACCOUNT_KEY = 'ST+B5L0VOvv/diqJPVBYMZmR83oS//uncqA590SxjutFNT0THLYqJn72TcM8/e4B0m3Od4WsUHkHRxgI3L8WHw=='
-_POOL_ID = 'LinuxFfmpegPool3'
-_POOL_NODE_COUNT = 5
+_POOL_ID = 'LinuxFfmpegPool'
+_DEDICATED_POOL_NODE_COUNT = 0
+_LOW_PRIORITY_POOL_NODE_COUNT = 5
 _POOL_VM_SIZE = 'STANDARD_A1_v2'
-_JOB_ID = 'LinuxFfmpegJob3'
+_JOB_ID = 'LinuxFfmpegJob'
 
 
 
@@ -112,12 +113,11 @@ def upload_file_to_container(block_blob_client, container_name, file_path):
     block_blob_client.create_blob_from_path(container_name,
                                             blob_name,
                                             file_path)
-
-    sas_token = block_blob_client.generate_blob_shared_access_signature(
-        container_name,
-        blob_name,
-        permission=azureblob.BlobPermissions.READ,
-        expiry=datetime.datetime.utcnow() + datetime.timedelta(hours=2))
+    
+    # Obtain the SAS token for the container.
+    sas_token = get_container_sas_token(block_blob_client,
+                            container_name, azureblob.BlobPermissions.READ)
+    
 
     sas_url = block_blob_client.make_blob_url(container_name,
                                               blob_name,
@@ -126,8 +126,7 @@ def upload_file_to_container(block_blob_client, container_name, file_path):
     return batchmodels.ResourceFile(file_path=blob_name,
                                     blob_source=sas_url)
 
-
-def get_container_sas_url(block_blob_client,
+def get_container_sas_token(block_blob_client,
                             container_name, blob_permissions):
     """
     Obtains a shared access signature granting the specified permissions to the
@@ -142,14 +141,36 @@ def get_container_sas_url(block_blob_client,
     """
     # Obtain the SAS token for the container, setting the expiry time and
     # permissions. In this case, no start time is specified, so the shared
-    # access signature becomes valid immediately.
+    # access signature becomes valid immediately. Expiration is in 2 hours.
     container_sas_token = \
         block_blob_client.generate_container_shared_access_signature(
             container_name,
             permission=blob_permissions,
             expiry=datetime.datetime.utcnow() + datetime.timedelta(hours=2))
+
+    return container_sas_token
+
+
+
+def get_container_sas_url(block_blob_client,
+                            container_name, blob_permissions):
+    """
+    Obtains a shared access signature URL that provides write access to the 
+    ouput container to which the tasks will upload their output.
+
+    :param block_blob_client: A blob service client.
+    :type block_blob_client: `azure.storage.blob.BlockBlobService`
+    :param str container_name: The name of the Azure Blob storage container.
+    :param BlobPermissions blob_permissions:
+    :rtype: str
+    :return: A SAS URL granting the specified permissions to the container.
+    """
+    # Obtain the SAS token for the container.
+    sas_token = get_container_sas_token(block_blob_client,
+                            container_name, azureblob.BlobPermissions.WRITE)
+
     # Construct SAS URL for the container
-    container_sas_url = "https://{}.blob.core.windows.net/{}?{}".format(_STORAGE_ACCOUNT_NAME, container_name, container_sas_token)
+    container_sas_url = "https://{}.blob.core.windows.net/{}?{}".format(_STORAGE_ACCOUNT_NAME, container_name, sas_token)
 
     return container_sas_url
 
@@ -172,6 +193,8 @@ def create_pool(batch_service_client, pool_id):
     # nodes, see:
     # https://azure.microsoft.com/documentation/articles/batch-linux-nodes/
 
+    # The start task installs ffmpeg on each node from an available repository, using
+    # an administrator user identity.
   
     new_pool = batch.models.PoolAddParameter(
         id=pool_id,
@@ -184,7 +207,8 @@ def create_pool(batch_service_client, pool_id):
                 ),
             node_agent_sku_id="batch.node.ubuntu 16.04"),
         vm_size=_POOL_VM_SIZE,
-        target_dedicated_nodes=_POOL_NODE_COUNT,
+        target_dedicated_nodes=_DEDICATED_POOL_NODE_COUNT,
+        target_low_priority_nodes=_LOW_PRIORITY_POOL_NODE_COUNT,
         start_task=batchmodels.StartTask(
             command_line="/bin/bash -c \"add-apt-repository -y ppa:djcj/hybrid && apt-get update && apt-get install -y ffmpeg\"",
             wait_for_success=True,
@@ -245,23 +269,15 @@ def add_tasks(batch_service_client, job_id, input_files, output_container_sas_ur
         input_file_path=input_file.file_path
         output_file_path="".join((input_file_path).split('.')[:-1]) + '.mp3'
         command = "/bin/bash -c \"ffmpeg -i {} {} \"".format(input_file_path, output_file_path)
-        taskoutput_files = []
-        outputcontainer = batchmodels.OutputFileBlobContainerDestination(output_container_sas_url)
-        taskupload_options = batchmodels.OutputFileUploadOptions(batchmodels.OutputFileUploadCondition.task_success)
-        taskoutput_files.append(batchmodels.OutputFile(
-                file_pattern=output_file_path,
-                destination=outputcontainer,
-                upload_options=taskupload_options)
-        )
-
         tasks.append(batch.models.TaskAddParameter(
             id='Task{}'.format(idx),
             command_line=command,
             resource_files=[input_file],
-            output_files=[batchmodels.OutputFile(
-                file_pattern=output_file_path,
-                destination=outputcontainer,
-                upload_options=taskupload_options)]
+            output_files=[batchmodels.OutputFile(output_file_path,
+                      destination=batchmodels.OutputFileDestination(
+                        container=batchmodels.OutputFileBlobContainerDestination(output_container_sas_url)),
+                      upload_options=batchmodels.OutputFileUploadOptions(
+                        batchmodels.OutputFileUploadCondition.task_success))]
             )
      )
     batch_service_client.task.add_collection(job_id, tasks)
@@ -341,7 +357,7 @@ if __name__ == '__main__':
 
     # Obtain a shared access signature URL that provides write access to the output
     # container to which the tasks will upload their output.
-
+    
     output_container_sas_url = get_container_sas_url(
         blob_client,
         output_container_name,
@@ -358,7 +374,7 @@ if __name__ == '__main__':
 
     # Create the pool that will contain the compute nodes that will execute the
     # tasks. 
-    # create_pool(batch_client, _POOL_ID)
+    create_pool(batch_client, _POOL_ID)
 
     # Create the job that will run the tasks.
     create_job(batch_client, _JOB_ID, _POOL_ID)
@@ -371,14 +387,11 @@ if __name__ == '__main__':
                                _JOB_ID,
                                datetime.timedelta(minutes=30))
 
-    print("  Success! All tasks reached the 'Completed' state within the "
+    print("Success! All tasks completed successfully within the "
           "specified timeout period.")
 
 
-    # Print the stdout.txt and stderr.txt files for each task to the console
-    # print_task_output(batch_client, _JOB_ID)
-
-    # Clean up storage resources
+    # Delete input container in storage
     print('Deleting input container...')
     blob_client.delete_container(input_container_name)
     

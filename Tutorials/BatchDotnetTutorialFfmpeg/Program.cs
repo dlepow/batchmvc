@@ -33,14 +33,17 @@ namespace BatchDotnetTutorialFfmpeg
         private const string StorageAccountName = "mybatchstorage121";
         private const string StorageAccountKey = "ST+B5L0VOvv/diqJPVBYMZmR83oS//uncqA590SxjutFNT0THLYqJn72TcM8/e4B0m3Od4WsUHkHRxgI3L8WHw==";
 
-        // Pool and Job IDs
+        // Pool and Job constants
         private const string PoolId = "WinFFmpegPool";
+        private const int DedicatedNodeCount = 0;
+        private const int LowPriorityNodeCount = 5;
+        private const string PoolVMSize = "STANDARD_A1_v2";
         private const string JobId = "WinFFmpegJob";
 
         // Application package Id and version
         // This assumes the Windows ffmpeg app package is already added to the Batch account. 
-        // First download ffmpeg zipfile from https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-3.4-win64-static.zip
-        // To add package to the Batch account, see https://docs.microsoft.com/azure/batch/batch-application-packages
+        // First download ffmpeg zipfile from https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-3.4-win64-static.zip.
+        // To add package to the Batch account, see https://docs.microsoft.com/azure/batch/batch-application-packages.
 
         const string appPackageId = "ffmpeg";
         const string appPackageVersion = "3.4";
@@ -127,10 +130,11 @@ namespace BatchDotnetTutorialFfmpeg
                     // the tasks to complete.
                     MonitorTasks(batchClient, JobId, TimeSpan.FromMinutes(30)).Wait();
 
-                    
-
-                    
-
+                    // Delete input container in storage
+                    Console.Write("Deleting input container...");
+                    CloudBlobContainer container = blobClient.GetContainerReference(inputContainerName);
+                    container.DeleteIfExists();
+                   
                     // Print out timing info
                     timer.Stop();
                     Console.WriteLine();
@@ -256,7 +260,7 @@ namespace BatchDotnetTutorialFfmpeg
         private static string GetContainerSasUrl(CloudBlobClient blobClient, string containerName, SharedAccessBlobPermissions permissions)
         {
             // Set the expiry time and permissions for the container access signature. In this case, no start time is specified,
-            // so the shared access signature becomes valid immediately
+            // so the shared access signature becomes valid immediately. Expiration is in 2 hours.
             SharedAccessBlobPolicy sasConstraints = new SharedAccessBlobPolicy
             {
                 SharedAccessExpiryTime = DateTime.UtcNow.AddHours(2),
@@ -303,9 +307,10 @@ namespace BatchDotnetTutorialFfmpeg
                 // modify its properties.
                 pool = batchClient.PoolOperations.CreatePool(
                     poolId: poolId,
-                    targetDedicatedComputeNodes: 5,                                             // 5 compute nodes
-                    virtualMachineSize: "STANDARD_A1_v2",                                                // single-core, 1.75 GB memory
-                    virtualMachineConfiguration: virtualMachineConfiguration);   // Windows Server 2012 R2
+                    targetDedicatedComputeNodes: DedicatedNodeCount,
+                    targetLowPriorityComputeNodes: LowPriorityNodeCount,
+                    virtualMachineSize: PoolVMSize,                                                
+                    virtualMachineConfiguration: virtualMachineConfiguration);  
 
 
 
