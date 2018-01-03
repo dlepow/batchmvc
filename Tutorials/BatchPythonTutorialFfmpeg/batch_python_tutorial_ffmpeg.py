@@ -200,10 +200,10 @@ def create_pool(batch_service_client, pool_id):
         id=pool_id,
         virtual_machine_configuration=batchmodels.VirtualMachineConfiguration(
             image_reference=batchmodels.ImageReference(
-        	        publisher="Canonical",
-        	        offer="UbuntuServer",
-        	        sku="16.04.0-LTS",
-        	        version="latest"
+        	    publisher="Canonical",
+        	    offer="UbuntuServer",
+        	    sku="16.04.0-LTS",
+        	    version="latest"
                 ),
             node_agent_sku_id="batch.node.ubuntu 16.04"),
         vm_size=_POOL_VM_SIZE,

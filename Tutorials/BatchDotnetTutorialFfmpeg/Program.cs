@@ -114,8 +114,6 @@ namespace BatchDotnetTutorialFfmpeg
                 using (BatchClient batchClient = BatchClient.Open(sharedKeyCredentials))
                 {
                     // Create the Batch pool, which contains the compute nodes that execute the tasks.
-                    // This function defines a start task that is executed each time a compute node joins
-                    // the pool, or is rebooted or reimaged.
                     CreatePoolIfNoneExist(batchClient, PoolId);
 
                     // Create the job that runs the tasks.
@@ -397,7 +395,7 @@ namespace BatchDotnetTutorialFfmpeg
                 // Assign a task ID for each iteration
                 string taskId = "task_" + inputFiles.IndexOf(inputFile);
 
-                // Define task command line to convert the video format from MP4 to MPEG-1 using ffmpeg.
+                // Define task command line to convert the video format from MP4 to MP3 using ffmpeg.
                 // Note that ffmpeg syntax specifies the format as the file extension of the input file
                 // and the output file respectively. In this case inputs are MP4.
                 string appPath = String.Format("%AZ_BATCH_APP_PACKAGE_{0}#{1}%", appPackageId, appPackageVersion);
@@ -411,7 +409,7 @@ namespace BatchDotnetTutorialFfmpeg
                 CloudTask task = new CloudTask(taskId, taskCommandLine);
                 task.ResourceFiles = new List<ResourceFile> { inputFile };
 
-                // Task output file
+                // Task output file will be uploaded to the output container in Storage.
 
                 List<OutputFile> outputFileList = new List<OutputFile>();
                 OutputFileBlobContainerDestination outputContainer = new OutputFileBlobContainerDestination(outputContainerSasUrl);
@@ -508,32 +506,6 @@ namespace BatchDotnetTutorialFfmpeg
             }
 
             return allTasksSuccessful;
-        }
-
-        // DownloadBlobsFromContainer(): Downloads all files from the specified blob storage container
-        //   to the specified directory.
-        //   * blobClient: A CloudBlobClient object.
-        //   * containerName: The name of the blob storage container containing the files to download.
-        //   * directoryPath: The full path of the local directory to which the files should be downloaded.
-        private static void DownloadBlobsFromContainer(CloudBlobClient blobClient, string containerName, string directoryPath)
-        {
-            Console.WriteLine("Downloading all files from container [{0}]...", containerName);
-
-            // Retrieve a reference to a previously created container
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
-
-            // Get a flat listing of all the block blobs in the specified container
-            foreach (IListBlobItem item in container.ListBlobs(prefix: null, useFlatBlobListing: true))
-            {
-                // Retrieve reference to the current blob
-                CloudBlob blob = (CloudBlob)item;
-
-                // Save blob contents to a file in the specified folder
-                string localOutputFile = Path.Combine(directoryPath, blob.Name);
-                blob.DownloadToFile(localOutputFile, FileMode.Create);
-            }
-
-            Console.WriteLine("All files downloaded to {0}", directoryPath);
         }
 
         // PrintAggregateException(): Processes all exceptions inside an aggregate exception object
