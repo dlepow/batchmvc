@@ -30,12 +30,12 @@ sys.path.append('..')
 # for the Batch and Storage client objects.
 
 # global
-_BATCH_ACCOUNT_NAME ='mybatchaccount'
-_BATCH_ACCOUNT_KEY = 'gMSB4M7NW79/djOu/33KbKEPuh7nVIsk2V17dqt2voj0kFLbpQJenDqDpaWLDi7RKpF+wEy4oOSOGSbkxVPLOQ=='
-_BATCH_ACCOUNT_URL = 'https://mybatchaccount.westus2.batch.azure.com'
+_BATCH_ACCOUNT_NAME =''
+_BATCH_ACCOUNT_KEY = ''
+_BATCH_ACCOUNT_URL = ''
 
-_STORAGE_ACCOUNT_NAME = 'mybatchstorage121'
-_STORAGE_ACCOUNT_KEY = 'ST+B5L0VOvv/diqJPVBYMZmR83oS//uncqA590SxjutFNT0THLYqJn72TcM8/e4B0m3Od4WsUHkHRxgI3L8WHw=='
+_STORAGE_ACCOUNT_NAME = ''
+_STORAGE_ACCOUNT_KEY = ''
 _POOL_ID = 'LinuxFfmpegPool'
 _DEDICATED_POOL_NODE_COUNT = 0
 _LOW_PRIORITY_POOL_NODE_COUNT = 5
@@ -336,11 +336,12 @@ if __name__ == '__main__':
     # Use the blob client to create the containers in Azure Storage if they
     # don't yet exist.
  
-    print('Creating storage containers...')
     input_container_name = 'input'
     output_container_name = 'output'
     blob_client.create_container(input_container_name, fail_on_exist=False)
     blob_client.create_container(output_container_name, fail_on_exist=False)
+    print('Container [{}] created.'.format(input_container_name))
+    print('Container [{}] created.'.format(output_container_name))
 
     # Create a list of all MP4 files in the InputFiles directory. 
     input_file_paths = []
@@ -392,7 +393,7 @@ if __name__ == '__main__':
 
 
     # Delete input container in storage
-    print('Deleting input container...')
+    print('Deleting container [{}]...'.format(input_container_name))
     blob_client.delete_container(input_container_name)
     
 
