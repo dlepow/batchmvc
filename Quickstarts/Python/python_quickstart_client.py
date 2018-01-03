@@ -30,12 +30,12 @@ sys.path.append('..')
 # for the Batch and Storage client objects.
 
 # global
-_BATCH_ACCOUNT_NAME ='mybatchaccount'
-_BATCH_ACCOUNT_KEY = 'gMSB4M7NW79/djOu/33KbKEPuh7nVIsk2V17dqt2voj0kFLbpQJenDqDpaWLDi7RKpF+wEy4oOSOGSbkxVPLOQ=='
-_BATCH_ACCOUNT_URL = 'https://mybatchaccount.westus2.batch.azure.com'
+_BATCH_ACCOUNT_NAME =''
+_BATCH_ACCOUNT_KEY = ''
+_BATCH_ACCOUNT_URL = ''
 
-_STORAGE_ACCOUNT_NAME = 'mybatchstorage121'
-_STORAGE_ACCOUNT_KEY = 'ST+B5L0VOvv/diqJPVBYMZmR83oS//uncqA590SxjutFNT0THLYqJn72TcM8/e4B0m3Od4WsUHkHRxgI3L8WHw=='
+_STORAGE_ACCOUNT_NAME = ''
+_STORAGE_ACCOUNT_KEY = ''
 _POOL_ID = 'PythonQuickstartPool'
 _POOL_NODE_COUNT = 2
 _POOL_VM_SIZE = 'STANDARD_A1_v2'
