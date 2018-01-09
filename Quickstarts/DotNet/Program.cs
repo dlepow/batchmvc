@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
-//
-// Companion project to the following article:
+﻿// Companion project to the following article:
 // https://docs.microsoft.com/azure/batch/quick-run-dotnet
 
 using Microsoft.Azure.Batch;
@@ -63,7 +61,7 @@ namespace BatchDotNetQuickstart
                 // Create the blob client, for use in obtaining references to blob storage containers
                 CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
 
-                // Use the blob client to create the containers in Azure Storage if they don't yet exist
+                // Use the blob client to create the input container in Azure Storage 
                 const string inputContainerName = "input";
 
                 CloudBlobContainer container = blobClient.GetContainerReference(inputContainerName);
@@ -86,6 +84,7 @@ namespace BatchDotNetQuickstart
                 {
                     inputFiles.Add(UploadFileToContainer(blobClient, inputContainerName, filePath));
                 }
+                
                 // Get a Batch client using account creds
 
                 BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(BatchAccountUrl, BatchAccountName, BatchAccountKey);
